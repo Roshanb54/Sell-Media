@@ -679,8 +679,12 @@ function sell_media_show_file_info(){
 	}
 
 	if ( preg_match( '#^(audio|video)/#', get_post_mime_type( $attachment_id ) ) ) {
-		echo '<li class="length"><span class="title">' . __( 'Length', 'sell_media' ) . ':</span> ' . $meta['length_formatted'] . '</li>';
-		echo '<li class="bitrate"><span class="title">' . __( 'Bitrate', 'sell_media' ) . ':</span> ' . round( $meta['bitrate'] / 1000 ) . 'kb/s</li>';
+		if( isset( $meta['length_formatted'] ) ){
+			echo '<li class="length"><span class="title">' . __( 'Length', 'sell_media' ) . ':</span> ' . $meta['length_formatted'] . '</li>';
+		}
+		if( isset( $meta['bitrate'] ) ){
+			echo '<li class="bitrate"><span class="title">' . __( 'Bitrate', 'sell_media' ) . ':</span> ' . round( $meta['bitrate'] / 1000 ) . 'kb/s</li>';
+		}
 	}
 	echo do_action( 'sell_media_additional_list_items', $post->ID );
 	echo '</ul>';
