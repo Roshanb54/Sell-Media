@@ -15,7 +15,7 @@ class SellMediaAudio extends SellMediaProducts {
     function __construct(){
         add_filter( 'sell_media_quick_view_post_thumbnail', array( $this, 'quick_view_thumbnail' ), 10, 2 );
 
-        add_filter( 'sell_media_grid_item_class', array( $this, 'add_class' ) );
+        add_filter( 'sell_media_grid_item_class', array( $this, 'add_class' ), 10, 2 );
     }
 
     /**
@@ -83,10 +83,12 @@ class SellMediaAudio extends SellMediaProducts {
      * Add audio class.
      * @param string $classes Class for the item.
      */
-    function add_class( $classes ){
-        global $post;
+    function add_class( $classes, $post_id ){
+        if( is_null( $post_id ) ){
+            return $classes;
+        }
 
-        if( $this->is_audio_item( $post->ID ) ){
+        if( $this->is_audio_item( $post_id ) ){
             return $classes . ' sell-media-grid-single-audio-item';
         }
 
