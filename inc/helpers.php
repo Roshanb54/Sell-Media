@@ -1657,3 +1657,12 @@ function sell_media_generate_attachment_metadata( $data, $attachment_id) {
 }
 
 add_filter( 'wp_generate_attachment_metadata', 'sell_media_generate_attachment_metadata', 10, 2 );
+
+
+function sell_media_audio_video_preview_text( $text, $post_id, $attachment_id ){
+	if( SellMediaVideos::is_video_item( $post_id ) || SellMediaAudio::is_audio_item( $post_id ) )
+		return __( 'Preview', 'sell_media' );
+	return $text;
+}
+
+add_filter( 'sell_media_quick_view_text', 'sell_media_audio_video_preview_text', 10, 3 );
