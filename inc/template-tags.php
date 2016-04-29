@@ -191,6 +191,10 @@ function sell_media_gallery( $post_id ) {
 		$attachment_id = get_query_var( 'id' );
 		if ( ! empty( $attachment_id ) && sell_media_post_exists( $attachment_id ) ) {
 			do_action( 'sell_media_above_gallery', $post_id );
+			// Hide feature image is post is video/ audio.
+			if( SellMediaVideos::is_video_item( $post_id ) || SellMediaAudio::is_audio_item( $post_id ) ){
+				return false;
+			}
 			$html .= sell_media_item_icon( $attachment_id, 'large', false );
 			$html .= '<p class="sell-media-caption">';
 			$html .= '<span class="sell-media-title">' . sell_media_get_attachment_meta( $post_id, 'title' ) . '</span>';
@@ -547,14 +551,14 @@ function sell_media_append_media( $post_id ) {
 	if ( is_post_type_archive( 'sell_media_item' ) || is_tax( $sell_media_taxonomies ) || is_search() ) {
 		$html .= '<a href="' . get_permalink( $post_id ) . '" ' . sell_media_link_attributes( $post_id ) . '>' . sell_media_item_icon( $post_id, 'large', false ) . '</a>';
 	} elseif ( is_singular( 'sell_media_item' ) ) {
-		// Hide feature image is post is video/ audio.
-		if( SellMediaVideos::is_video_item( $post_id ) || SellMediaAudio::is_audio_item( $post_id ) ){
-			return false;
-		}
 		sell_media_set_post_views( $post_id );
 		if ( sell_media_has_multiple_attachments( $post_id ) ) {
 			$html .= sell_media_gallery( $post_id );
 		} else {
+			// Hide feature image is post is video/ audio.
+			if( SellMediaVideos::is_video_item( $post_id ) || SellMediaAudio::is_audio_item( $post_id ) ){
+				return false;
+			}
 			sell_media_item_icon( $post_id, 'large' );
 			$html .= '<p class="sell-media-caption">';
 			$html .= '<span class="sell-media-title">' . sell_media_get_attachment_meta( $post_id, 'title' ) . '</span>';
