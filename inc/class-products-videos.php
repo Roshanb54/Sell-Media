@@ -16,6 +16,10 @@ class SellMediaVideos extends SellMediaProducts {
         add_filter( 'sell_media_quick_view_post_thumbnail', array( $this, 'quick_view_thumbnail' ), 10, 2 );
 
         add_filter( 'sell_media_grid_item_class', array( $this, 'add_class' ), 10, 2 );
+
+        add_action( 'sell_media_after_options_meta_box', array( $this, 'add_meta_fields' ), 11 );
+
+        add_action( 'sell_media_extra_meta_save', array( $this, 'save_meta_fields' ) );
     }
 
     /**
@@ -25,14 +29,47 @@ class SellMediaVideos extends SellMediaProducts {
      * @return string          Updated video or image.
      */
     function quick_view_thumbnail( $html, $post_id ){
-        $first_video =  $this->get_first_embed_media( $post_id );
-        if( $first_video ){
-            return $first_video;
+        $preview_url =  $this->get_preview( $post_id );
+        if( $preview_url ){
+            return $preview_url;
         }
 
         return $html;
     }
 
+    /**
+     * Get Video/ audio preview.
+     * @param  int $post_id ID of post.
+     * @return string          Embed video/ audio.
+     */
+    function get_preview( $post_id ){
+        if( !$this->is_video_item( $post_id ) )
+            return false;
+
+        $url = get_post_meta( $post_id, 'sell_media_embed_link', true );
+        if( '' != $url ){
+            return wp_oembed_get( esc_url( $url ) );
+        }
+
+        return false;
+    }
+
+    function add_meta_fields( $post_id ){
+        $embed_url = get_post_meta( $post_id, 'sell_media_embed_link', true );
+        ?>
+        <div id="sell-media-embed-link-field" class="sell-media-field">
+            <label for="sell-media-embed-link"><?php _e( 'Preview URL', 'sell_media' ); ?></label>
+            <input name="sell_media_embed_link" id="sell-media-embed-link" class="" type="text" placeholder="" value="<?php echo esc_url( $embed_url ); ?>" />
+        </div>
+        <?php
+    }
+
+    function save_meta_fields( $post_id ){
+
+        if( isset( $_POST['sell_media_embed_link'] ) ){
+            update_post_meta( $post_id, 'sell_media_embed_link', esc_url_raw( $_POST['sell_media_embed_link'] ) );
+        } 
+    }
     /**
      * Get first video from the post content.
      * @param  int $post_id Id of the post.
