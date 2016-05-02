@@ -20,6 +20,7 @@ class SellMediaVideos extends SellMediaProducts {
         add_action( 'sell_media_after_options_meta_box', array( $this, 'add_meta_fields' ), 11 );
 
         add_action( 'sell_media_extra_meta_save', array( $this, 'save_meta_fields' ) );
+        add_action( 'wp_ajax_check_attachment_is_audio_video', array( $this, 'check_attachment_is_audio_video' ) );
     }
 
     /**
@@ -54,21 +55,53 @@ class SellMediaVideos extends SellMediaProducts {
         return false;
     }
 
+    /**
+     * Add meta fields.
+     * @param int $post_id ID of post.
+     */
     function add_meta_fields( $post_id ){
         $embed_url = get_post_meta( $post_id, 'sell_media_embed_link', true );
         ?>
-        <div id="sell-media-embed-link-field" class="sell-media-field">
+        <div id="sell-media-embed-link-field" class="sell-media-field" style="display:none;">
             <label for="sell-media-embed-link"><?php _e( 'Preview URL', 'sell_media' ); ?></label>
             <input name="sell_media_embed_link" id="sell-media-embed-link" class="" type="text" placeholder="" value="<?php echo esc_url( $embed_url ); ?>" />
         </div>
         <?php
     }
 
+    /**
+     * Save meta fields.
+     * @param  int $post_id ID of post.
+     * @return void          
+     */
     function save_meta_fields( $post_id ){
 
         if( isset( $_POST['sell_media_embed_link'] ) ){
             update_post_meta( $post_id, 'sell_media_embed_link', esc_url_raw( $_POST['sell_media_embed_link'] ) );
         } 
+    }
+
+    /**
+     * Check if attachment is audio or video.
+     */
+    function check_attachment_is_audio_video(){
+        if( !is_admin() ){
+            echo 'false';
+            exit;
+        }
+
+        $attachment_id = absint( $_POST['attachment_id'] );
+
+        $is_audio = $this->is_attachment_audio( $attachment_id );
+        $is_video = $this->is_attachment_video( $attachment_id );
+
+        if( $is_video || $is_audio ){
+            echo 'true';
+            exit;
+        }
+
+        echo "false";
+        exit;
     }
     /**
      * Get first video from the post content.
@@ -118,6 +151,55 @@ class SellMediaVideos extends SellMediaProducts {
                       return false;
                 }
             }
+        }
+    }
+
+    /**
+     * Check if attachment is video.
+     * @param  int  $attachment_id ID of attachment.
+     * @return boolean                True if is video.
+     */
+    function is_attachment_video( $attachment_id ){
+        $type = get_post_mime_type($attachment_id);
+        switch ($type) {
+            case 'video/x-ms-asf' :
+            case 'video/x-ms-wmv' :
+            case 'video/x-ms-wmx' :
+            case 'video/x-ms-wm' :
+            case 'video/avi' :
+            case 'video/divx' :
+            case 'video/x-flv' :
+            case 'video/quicktime' :
+            case 'video/mpeg' :
+            case 'video/mp4' :
+            case 'video/ogg' :
+            case 'video/webm' :
+            case 'video/x-matroska' :
+              return true; break;
+            default:
+              return false;
+        }
+    }
+
+    /**
+     * Check if attachment is audio.
+     * @param  int  $attachment_id ID of attachment.
+     * @return boolean                True if is audio.
+     */
+    function is_attachment_audio( $attachment_id ){
+        $type = get_post_mime_type($attachment_id);
+        switch ($type) {
+            case 'audio/mpeg' :
+            case 'audio/x-realaudio' :
+            case 'audio/wav' :
+            case 'audio/ogg' :
+            case 'audio/midi' :
+            case 'audio/x-ms-wma' :
+            case 'audio/x-ms-wax' :
+            case 'audio/x-matroska' :
+              return true; break;
+            default:
+              return false;
         }
     }
 
