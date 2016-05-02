@@ -25,12 +25,29 @@ class SellMediaAudio extends SellMediaProducts {
      * @return string          Updated video or image.
      */
     function quick_view_thumbnail( $html, $post_id ){
-        $first_video =  $this->get_first_embed_media( $post_id );
-        if( $first_video ){
-            return $first_video;
+        $preview_url =  $this->get_preview( $post_id );
+        if( $preview_url ){
+            return $preview_url;
         }
 
         return $html;
+    }
+
+    /**
+     * Get Video/ audio preview.
+     * @param  int $post_id ID of post.
+     * @return string          Embed video/ audio.
+     */
+    function get_preview( $post_id ){
+        if( !$this->is_audio_item( $post_id ) )
+            return false;
+
+        $url = get_post_meta( $post_id, 'sell_media_embed_link', true );
+        if( '' != $url ){
+            return wp_oembed_get( esc_url( $url ) );
+        }
+
+        return false;
     }
 
     /**
